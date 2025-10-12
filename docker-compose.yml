@@ -1,0 +1,155 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  database:
+    image: postgres:15-alpine
+    container_name: tickkk-database
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-tickkk}
+      POSTGRES_USER: ${POSTGRES_USER:-tickkk_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tickkk_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - tickkk-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-tickkk_user} -d ${POSTGRES_DB:-tickkk}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Flask API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tickkk-backend
+    environment:
+      FLASK_ENV: ${FLASK_ENV:-development}
+      # Prefer POSTGRES_* for DB connection; Config builds safe URI
+      POSTGRES_DB: ${POSTGRES_DB:-tickkk}
+      POSTGRES_USER: ${POSTGRES_USER:-tickkk_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tickkk_password}
+      POSTGRES_HOST: database
+      POSTGRES_PORT: 5432
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-key-change-in-production}
+      # Actualización: usar webhooks de n8n.cloud horizontes2025
+      N8N_BASE_URL: https://horizontes2025.app.n8n.cloud
+      N8N_WEBHOOK_NEW_TICKET: https://horizontes2025.app.n8n.cloud/webhook/nuevo-ticket
+      N8N_WEBHOOK_UPDATE_TICKET: https://horizontes2025.app.n8n.cloud/webhook/actualizar-ticket
+      N8N_WEBHOOK_CLOSE_TICKET: https://horizontes2025.app.n8n.cloud/webhook/cerrar-ticket
+      N8N_WEBHOOK_AGENT_ASSIGNMENT: https://horizontes2025.app.n8n.cloud/webhook/asignar-agente
+      CORS_ORIGINS: "*"
+    ports:
+      - "0.0.0.0:9000:5000"
+    volumes:
+      - ./backend:/app
+      - backend_logs:/app/logs
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - tickkk-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend React Application
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tickkk-frontend
+    environment:
+      REACT_APP_API_BASE_URL: /api
+    ports:
+      - "0.0.0.0:9100:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - tickkk-network
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # n8n Automation Engine
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: tickkk-n8n
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-admin123}
+      N8N_HOST: ${N8N_HOST:-localhost}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: http
+      WEBHOOK_URL: http://localhost:9300/
+      GENERIC_TIMEZONE: ${TIMEZONE:-America/Mexico_City}
+      # Email configuration
+      SMTP_HOST: ${SMTP_HOST}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      # SendGrid (alternative)
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      # Environment variables for workflows
+      EMAIL_DOMAIN: ${EMAIL_DOMAIN:-tickkk.com}
+      SUPPORT_TEAM_EMAIL: ${SUPPORT_TEAM_EMAIL:-soporte@tickkk.com}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:9100}
+    ports:
+      - "9300:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/.n8n/workflows:ro
+    networks:
+      - tickkk-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis for caching (optional, for production)
+  redis:
+    image: redis:7-alpine
+    container_name: tickkk-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - tickkk-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - production
+
+volumes:
+  postgres_data:
+    driver: local
+  n8n_data:
+    driver: local
+  redis_data:
+    driver: local
+  backend_logs:
+    driver: local
+
+networks:
+  tickkk-network:
+    driver: bridge
