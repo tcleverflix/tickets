@@ -1,0 +1,173 @@
+import React, { useState, useEffect } from 'react';
+import Header from './Header';
+import TicketList from './TicketList';
+import TicketDetail from './TicketDetail';
+import NewTicketForm from './NewTicketForm';
+import { ticketsApi } from '../services/api';
+
+const App = () => {
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [currentView, setCurrentView] = useState('list'); // 'list', 'detail', 'new'
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Load tickets on component mount
+  useEffect(() => {
+    loadTickets();
+  }, []);
+
+  const loadTickets = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await ticketsApi.getTickets();
+      setTickets(response.data);
+    } catch (error) {
+      console.error('Error loading tickets:', error);
+      setError('Error al cargar los tickets. Por favor recarga la página.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleNewTicket = () => {
+    setCurrentView('new');
+    setSelectedTicket(null);
+  };
+
+  const handleTicketSelect = (ticket) => {
+    setSelectedTicket(ticket);
+    setCurrentView('detail');
+  };
+
+  const handleBackToList = () => {
+    setCurrentView('list');
+    setSelectedTicket(null);
+  };
+
+  const handleTicketCreated = (newTicket) => {
+    setTickets(prev => [newTicket, ...prev]);
+    setSelectedTicket(newTicket);
+    setCurrentView('detail');
+  };
+
+  const handleTicketUpdate = (updatedTicket) => {
+    setTickets(prev =>
+      prev.map(ticket =>
+        ticket.id === updatedTicket.id ? updatedTicket : ticket
+      )
+    );
+    setSelectedTicket(updatedTicket);
+  };
+
+  const appStyle = {
+    minHeight: '100vh',
+    backgroundColor: 'var(--background)',
+    display: 'flex',
+    flexDirection: 'column'
+  };
+
+  const mainStyle = {
+    flex: 1,
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px'
+  };
+
+  const contentStyle = {
+    flex: 1,
+    display: 'grid',
+    gridTemplateColumns: currentView === 'list' ? '1fr' : '1fr',
+    gap: '24px',
+    minHeight: 0 // Important for flex children with overflow
+  };
+
+  const errorStyle = {
+    padding: '16px',
+    backgroundColor: 'var(--error)',
+    color: 'var(--white)',
+    borderRadius: 'var(--radius)',
+    marginBottom: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px'
+  };
+
+  const renderContent = () => {
+    if (error) {
+      return (
+        <div style={errorStyle}>
+          <span>{error}</span>
+          <button
+            onClick={loadTickets}
+            style={{
+              marginLeft: 'auto',
+              padding: '4px 8px',
+              backgroundColor: 'rgba(255, 255, 255, 0.2)',
+              border: 'none',
+              borderRadius: '4px',
+              color: 'var(--white)',
+              cursor: 'pointer'
+            }}
+          >
+            Reintentar
+          </button>
+        </div>
+      );
+    }
+
+    switch (currentView) {
+      case 'list':
+        return (
+          <TicketList
+            tickets={tickets}
+            onTicketSelect={handleTicketSelect}
+            selectedTicket={selectedTicket}
+            loading={loading}
+            onRefresh={loadTickets}
+          />
+        );
+
+      case 'detail':
+        return selectedTicket ? (
+          <TicketDetail
+            ticket={selectedTicket}
+            onBack={handleBackToList}
+            onTicketUpdate={handleTicketUpdate}
+          />
+        ) : (
+          <div>Ticket no encontrado</div>
+        );
+
+      case 'new':
+        return (
+          <NewTicketForm
+            onBack={handleBackToList}
+            onTicketCreated={handleTicketCreated}
+          />
+        );
+
+      default:
+        return <div>Vista no encontrada</div>;
+    }
+  };
+
+  return (
+    <div style={appStyle}>
+      <Header
+        onNewTicket={handleNewTicket}
+        currentView={currentView}
+      />
+
+      <main style={mainStyle}>
+        <div style={contentStyle}>
+          {renderContent()}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default App;
