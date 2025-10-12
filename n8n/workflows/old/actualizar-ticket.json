@@ -1,0 +1,123 @@
+{
+  "name": "Actualizar Ticket - Con Delay",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "actualizar-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "01ad37f2-3f94-4e57-8979-9fe565007e80",
+      "name": "Webhook Actualizar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        192,
+        -160
+      ],
+      "webhookId": "actualizar-ticket"
+    },
+    {
+      "parameters": {
+        "fromEmail": "soporte@tcleverflix.com",
+        "toEmail": "={{ $json.body.client_email }}",
+        "subject": "=Nueva actualización en tu ticket #{{ $json.body.ticket-id }}",
+        "emailFormat": "html",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n        .header { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 30px; text-align: center; color: white; border-radius: 8px 8px 0 0; }\n        .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }\n        .ticket-info { background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n        .comment-box { background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n        .agent-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }\n        .footer { background-color: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; }\n        .badge { display: inline-block; padding: 6px 12px; background-color: #10b981; color: white; border-radius: 4px; font-size: 12px; font-weight: bold; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1 style=\"margin: 0;\">📢 Actualización de Ticket</h1>\n            <p style=\"margin: 10px 0 0 0;\">Tu ticket ha sido actualizado</p>\n        </div>\n\n        <div class=\"content\">\n            <h2>¡Hola {{ $json.body.client_name }}!</h2>\n\n            <p>Hay una nueva actualización en tu ticket de soporte.</p>\n\n            <div class=\"ticket-info\">\n                <div style=\"font-size: 20px; font-weight: bold; color: #f59e0b; margin-bottom: 10px;\">\n                    Ticket #{{ $json.body.ticket_id }}\n                </div>\n                <div style=\"font-size: 16px; font-weight: 500; margin-bottom: 10px;\">\n                    {{ $json.body.subject }}\n                </div>\n                <span class=\"badge\">EN PROCESO</span>\n            </div>\n\n            <div class=\"agent-card\">\n                <div style=\"font-size: 14px; opacity: 0.9; margin-bottom: 8px;\">\n                    👤 Agente asignado a tu caso\n                </div>\n                <div style=\"font-size: 20px; font-weight: bold; margin-bottom: 8px;\">\n                    {{ $json.body.agent_name }}\n                </div>\n                <div style=\"font-size: 14px; opacity: 0.9;\">\n                    📧 {{ $json.body.agent_email }}\n                </div>\n            </div>\n\n            <div class=\"comment-box\">\n                <div style=\"font-weight: bold; margin-bottom: 10px; color: #f59e0b;\">\n                    💬 Nuevo mensaje del equipo de soporte:\n                </div>\n                <div style=\"white-space: pre-wrap;\">\n                    {{ $json.body.comment_text }}\n                </div>\n            </div>\n\n            <p><strong>¿Necesitas responder?</strong></p>\n            <p>Puedes responder a este email para continuar la conversación. Tu agente asignado recibirá tu mensaje.</p>\n        </div>\n\n        <div class=\"footer\">\n            <p style=\"margin: 0; color: #6b7280; font-size: 14px;\">\n                Gracias por confiar en <strong>Tcleverflix</strong> - Sistema de Soporte Informático\n            </p>\n            <p style=\"margin: 5px 0 0 0; color: #9ca3af; font-size: 12px;\">\n                © 2025 Tcleverflix. Todos los derechos reservados.\n            </p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "8b3e49af-3e9d-455a-b42c-8c8cb66b47ff",
+      "name": "Email Actualización",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -160
+      ],
+      "webhookId": "a7351860-a8ff-4c14-ad4e-0ccc4ae3e1dc",
+      "credentials": {
+        "smtp": {
+          "id": "RmCDWJg7LNxKc9qO",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Notificación de actualización enviada\", \"ticketId\": $json.body.ticket_id } }}",
+        "options": {}
+      },
+      "id": "8d003005-953a-4ef1-9dad-a2e2a02a4159",
+      "name": "Respuesta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        816,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        -160
+      ],
+      "id": "a55e6f5b-c153-4cbe-a16b-37b0a7d07595",
+      "name": " Wait 10 Seconds",
+      "webhookId": "81d81007-1323-4c24-bb0b-4d3d87feae9b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Actualizar": {
+      "main": [
+        [
+          {
+            "node": " Wait 10 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Actualización": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Wait 10 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Email Actualización",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6f6042b6-d18a-4962-90c4-8d9829df36d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "915042be12c1ff9d5ed97ad2319ac4e20048f4f69768d275f6ae0fb0f319803b"
+  },
+  "id": "XBeDr3uOTFh2bYTL",
+  "tags": []
+}
