@@ -1,15 +1,15 @@
-﻿# TickKK (Release para GitHub)
+# TickKK (Release para GitHub)
 
-Esta carpeta contiene una copia limpia del proyecto lista para publicar en GitHub. Incluye Docker para desarrollo y producciÃ³n, documentaciÃ³n y workflows de n8n.
+Esta carpeta contiene una copia limpia del proyecto lista para publicar en GitHub. Incluye Docker para desarrollo y producción, documentación y workflows de n8n.
 
 ## Contenido principal
 - docker-compose.yml / docker-compose.prod.yml
-- backend/ (cÃ³digo del API y esquema SQL)
+- backend/ (código del API y esquema SQL)
 - frontend/ (React + Nginx)
 - n8n/workflows/ (JSON de workflows)
-- docs/ y documentaciÃ³n adicional
+- docs/ y documentación adicional
 
-## Preparar publicaciÃ³n
+## Preparar publicación
 
 ```powershell
 # Ir a la carpeta release
@@ -18,7 +18,7 @@ cd release/tickkk-github
 # Inicializar repo
 git init
 git add .
-git commit -m "PublicaciÃ³n inicial"
+git commit -m "Publicación inicial"
 git branch -M main
 
 # Configurar remoto (reemplaza la URL)
@@ -27,6 +27,8 @@ git push -u origin main
 ```
 
 ## Importante
-- No subir archivos .env (ya estÃ¡ ignorado por .gitignore).
+- No subir archivos .env (ya está ignorado por .gitignore).
 - Configura secretos en GitHub (Actions/Environments) si automatizas despliegue.
 - Revisa DOCUMENTACION_DOCKER.md para puertos, servicios y workflows.
+
+  
