@@ -1,0 +1,115 @@
+services:
+  # Backend API Service
+  - type: web
+    name: tickkk-backend
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: docker build -t tickkk-backend .
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 4 app:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tickkk-database
+          property: connectionString
+      - key: N8N_BASE_URL
+        fromService:
+          type: web
+          name: tickkk-n8n
+          property: url
+      - key: N8N_WEBHOOK_NEW_TICKET
+        value: https://tickkk-n8n.onrender.com/webhook/nuevo-ticket
+      - key: N8N_WEBHOOK_UPDATE_TICKET
+        value: https://tickkk-n8n.onrender.com/webhook/actualizar-ticket
+      - key: N8N_WEBHOOK_CLOSE_TICKET
+        value: https://tickkk-n8n.onrender.com/webhook/cerrar-ticket
+      - key: CORS_ORIGINS
+        fromService:
+          type: web
+          name: tickkk-frontend
+          property: url
+
+  # Frontend Application
+  - type: web
+    name: tickkk-frontend
+    env: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: starter
+    region: oregon
+    branch: main
+    buildCommand: docker build --build-arg REACT_APP_API_BASE_URL=https://tickkk-backend.onrender.com/api -t tickkk-frontend .
+    startCommand: nginx -g "daemon off;"
+    healthCheckPath: /health
+    envVars:
+      - key: REACT_APP_API_BASE_URL
+        fromService:
+          type: web
+          name: tickkk-backend
+          property: url
+          concat: /api
+
+  # n8n Automation Service
+  - type: web
+    name: tickkk-n8n
+    env: docker
+    dockerfilePath: ./Dockerfile.n8n
+    dockerContext: .
+    plan: starter
+    region: oregon
+    branch: main
+    healthCheckPath: /healthz
+    envVars:
+      - key: N8N_BASIC_AUTH_ACTIVE
+        value: true
+      - key: N8N_BASIC_AUTH_USER
+        value: admin
+      - key: N8N_BASIC_AUTH_PASSWORD
+        generateValue: true
+      - key: N8N_HOST
+        value: tickkk-n8n.onrender.com
+      - key: N8N_PORT
+        value: 5678
+      - key: N8N_PROTOCOL
+        value: https
+      - key: WEBHOOK_URL
+        value: https://tickkk-n8n.onrender.com/
+      - key: GENERIC_TIMEZONE
+        value: America/Mexico_City
+      - key: EMAIL_DOMAIN
+        value: tickkk.com
+      - key: SUPPORT_TEAM_EMAIL
+        value: soporte@tickkk.com
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: tickkk-frontend
+          property: url
+      # Email configuration - set these manually in Render dashboard
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+
+databases:
+  # PostgreSQL Database
+  - name: tickkk-database
+    databaseName: tickkk
+    user: tickkk_user
+    plan: starter
+    region: oregon
+    postgresMajorVersion: 15
