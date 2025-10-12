@@ -1,0 +1,121 @@
+{
+  "name": "Actualizar Ticket - Con Delay",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "actualizar-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4fa9a993-cd18-4f86-b909-a86315cd3d2e",
+      "name": "Webhook Actualizar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "actualizar-ticket"
+    },
+    {
+      "parameters": {
+        "fromEmail": "soporte@tcleverflix.com",
+        "toEmail": "={{ $json.body.client_email }}",
+        "subject": "=Nueva actualización en tu ticket #{{ $json.body.ticket-id }}",
+        "emailFormat": "html",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <style>\n        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n        .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n        .header { background: linear-gradient(135deg, #f59e0b, #d97706); padding: 30px; text-align: center; color: white; border-radius: 8px 8px 0 0; }\n        .content { background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; }\n        .ticket-info { background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n        .comment-box { background-color: #fffbeb; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }\n        .agent-card { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; }\n        .footer { background-color: #f9fafb; padding: 20px; text-align: center; border-radius: 0 0 8px 8px; }\n        .badge { display: inline-block; padding: 6px 12px; background-color: #10b981; color: white; border-radius: 4px; font-size: 12px; font-weight: bold; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1 style=\"margin: 0;\">📢 Actualización de Ticket</h1>\n            <p style=\"margin: 10px 0 0 0;\">Tu ticket ha sido actualizado</p>\n        </div>\n\n        <div class=\"content\">\n            <h2>¡Hola {{ $json.body.client_name }}!</h2>\n\n            <p>Hay una nueva actualización en tu ticket de soporte.</p>\n\n            <div class=\"ticket-info\">\n                <div style=\"font-size: 20px; font-weight: bold; color: #f59e0b; margin-bottom: 10px;\">\n                    Ticket #{{ $json.body.ticket_id }}\n                </div>\n                <div style=\"font-size: 16px; font-weight: 500; margin-bottom: 10px;\">\n                    {{ $json.body.subject }}\n                </div>\n                <span class=\"badge\">EN PROCESO</span>\n            </div>\n\n            <div class=\"agent-card\">\n                <div style=\"font-size: 14px; opacity: 0.9; margin-bottom: 8px;\">\n                    👤 Agente asignado a tu caso\n                </div>\n                <div style=\"font-size: 20px; font-weight: bold; margin-bottom: 8px;\">\n                    {{ $json.body.agent_name }}\n                </div>\n                <div style=\"font-size: 14px; opacity: 0.9;\">\n                    📧 {{ $json.body.agent_email }}\n                </div>\n            </div>\n\n            <div class=\"comment-box\">\n                <div style=\"font-weight: bold; margin-bottom: 10px; color: #f59e0b;\">\n                    💬 Nuevo mensaje del equipo de soporte:\n                </div>\n                <div style=\"white-space: pre-wrap;\">\n                    {{ $json.body.comment_text }}\n                </div>\n            </div>\n\n            <p><strong>¿Necesitas responder?</strong></p>\n            <p>Puedes responder a este email para continuar la conversación. Tu agente asignado recibirá tu mensaje.</p>\n        </div>\n\n        <div class=\"footer\">\n            <p style=\"margin: 0; color: #6b7280; font-size: 14px;\">\n                Gracias por confiar en <strong>Tcleverflix</strong> - Sistema de Soporte Informático\n            </p>\n            <p style=\"margin: 5px 0 0 0; color: #9ca3af; font-size: 12px;\">\n                © 2025 Tcleverflix. Todos los derechos reservados.\n            </p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "4f9cd73b-6f28-4a30-901f-37363fe80041",
+      "name": "Email Actualización",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        400,
+        0
+      ],
+      "webhookId": "a7351860-a8ff-4c14-ad4e-0ccc4ae3e1dc",
+      "credentials": {
+        "smtp": {
+          "id": "tZJkPxhglw1Kfyf1",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Notificación de actualización enviada\", \"ticketId\": $json.body.ticket_id } }}",
+        "options": {}
+      },
+      "id": "ae726cba-44b0-4634-8ebf-6c53d6d2a3a3",
+      "name": "Respuesta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        624,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "89060477-3c27-4961-8320-d5f877a6f3b7",
+      "name": " Wait 5 Seconds",
+      "webhookId": "81d81007-1323-4c24-bb0b-4d3d87feae9b"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook Actualizar": {
+      "main": [
+        [
+          {
+            "node": " Wait 5 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Actualización": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    " Wait 5 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Email Actualización",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "7b30214d-a7df-433a-9f95-45e3a77a9298",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "76c978ccd60073f365d9e2f156abea6a00f03a27610b0ce06fcd5ae6f2e4f9c4"
+  },
+  "id": "N4k7HjL8mDQKbOgi",
+  "tags": []
+}
