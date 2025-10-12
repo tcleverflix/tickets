@@ -1,0 +1,95 @@
+{
+  "name": "Asignar Agente - Notificación",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "asignar-agente",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-asignar-agente",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ],
+      "webhookId": "asignar-agente"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\": \"success\", \"message\": \"Agent notification sent\"}",
+        "options": {}
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@tcleverflix.com",
+        "toEmail": "={{ $json.body.agent_email }}",
+        "subject": "=🎫 Nuevo Ticket Asignado #{{ $json.body.ticket_id }} - {{ $json.body.priority }}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            margin: 0;\n            padding: 0;\n        }\n        .container {\n            max-width: 650px;\n            margin: 0 auto;\n            padding: 0;\n        }\n        .header {\n            background: linear-gradient(135deg, #667eea, #764ba2);\n            padding: 40px 30px;\n            text-align: center;\n            color: white;\n            border-radius: 8px 8px 0 0;\n        }\n        .content {\n            background: #ffffff;\n            padding: 40px 30px;\n            border-left: 1px solid #e5e7eb;\n            border-right: 1px solid #e5e7eb;\n        }\n        .ticket-card {\n            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);\n            padding: 25px;\n            border-radius: 12px;\n            margin: 25px 0;\n            border-left: 6px solid #667eea;\n        }\n        .client-info {\n            background: #eff6ff;\n            padding: 20px;\n            border-radius: 8px;\n            margin: 20px 0;\n            border-left: 4px solid #3b82f6;\n        }\n        .action-button {\n            display: inline-block;\n            background: linear-gradient(135deg, #667eea, #764ba2);\n            color: white !important;\n            padding: 16px 40px;\n            text-decoration: none;\n            border-radius: 8px;\n            font-weight: bold;\n            font-size: 16px;\n            margin: 20px 0;\n            text-align: center;\n        }\n        .priority-badge {\n            display: inline-block;\n            padding: 8px 16px;\n            border-radius: 20px;\n            font-weight: bold;\n            font-size: 13px;\n            text-transform: uppercase;\n            letter-spacing: 0.5px;\n        }\n        .priority-baja { background-color: #10b981; color: white; }\n        .priority-media { background-color: #f59e0b; color: white; }\n        .priority-alta { background-color: #ef4444; color: white; }\n        .priority-critica { background-color: #7c3aed; color: white; }\n        .category-badge {\n            display: inline-block;\n            background: #f3f4f6;\n            color: #6b7280;\n            padding: 6px 14px;\n            border-radius: 6px;\n            font-size: 12px;\n            font-weight: 600;\n            margin-left: 10px;\n        }\n        .footer {\n            background-color: #f9fafb;\n            padding: 30px;\n            text-align: center;\n            border-radius: 0 0 8px 8px;\n            border: 1px solid #e5e7eb;\n        }\n        .info-row {\n            display: flex;\n            margin: 12px 0;\n            padding: 10px 0;\n            border-bottom: 1px solid #e5e7eb;\n        }\n        .info-label {\n            font-weight: 600;\n            color: #6b7280;\n            width: 120px;\n            flex-shrink: 0;\n        }\n        .info-value {\n            color: #111827;\n            flex: 1;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1 style=\"margin: 0; font-size: 32px;\">🎫 Nuevo Ticket Asignado</h1>\n            <p style=\"margin: 15px 0 0 0; font-size: 16px; opacity: 0.95;\">\n                Se te ha asignado automáticamente una nueva solicitud\n            </p>\n        </div>\n\n        <div class=\"content\">\n            <h2 style=\"color: #667eea; margin-top: 0;\">Hola {{ $json.body.agent_name }},</h2>\n\n            <p style=\"font-size: 16px; line-height: 1.8;\">\n                Se te ha asignado automáticamente el siguiente ticket. Por favor, revísalo y comienza a trabajar en él lo antes posible.\n            </p>\n\n            <div class=\"ticket-card\">\n                <div style=\"margin-bottom: 20px;\">\n                    <span style=\"font-size: 14px; color: #6b7280; font-weight: 600;\">TICKET</span>\n                    <h2 style=\"margin: 5px 0; color: #111827; font-size: 28px;\">\n                        #{{ $json.body.ticket_id }}\n                    </h2>\n                </div>\n\n                <div class=\"info-row\">\n                    <div class=\"info-label\">📝 Asunto:</div>\n                    <div class=\"info-value\" style=\"font-weight: 600; font-size: 16px;\">\n                        {{ $json.body.subject }}\n                    </div>\n                </div>\n\n                <div class=\"info-row\">\n                    <div class=\"info-label\">⚡ Prioridad:</div>\n                    <div class=\"info-value\">\n                        <span class=\"priority-badge priority-{{ $json.body.priority }}\">\n                            {{ $json.body.priority }}\n                        </span>\n                    </div>\n                </div>\n\n                <div class=\"info-row\" style=\"border-bottom: none;\">\n                    <div class=\"info-label\">🏷️ Categoría:</div>\n                    <div class=\"info-value\">\n                        <span class=\"category-badge\">\n                            {{ $json.body.category }}\n                        </span>\n                    </div>\n                </div>\n            </div>\n\n            <div class=\"client-info\">\n                <h3 style=\"margin-top: 0; color: #3b82f6; font-size: 18px;\">👤 Información del Cliente</h3>\n\n                <div style=\"margin: 10px 0;\">\n                    <strong>Nombre:</strong> {{ $json.body.client_name }}\n                </div>\n\n                <div style=\"margin: 10px 0;\">\n                    <strong>Email:</strong>\n                    <a href=\"mailto:{{ $json.body.client_email }}\" style=\"color: #3b82f6;\">\n                        {{ $json.body.client_email }}\n                    </a>\n                </div>\n            </div>\n\n            <div style=\"background: #fefce8; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #f59e0b;\">\n                <h3 style=\"margin-top: 0; color: #f59e0b; font-size: 16px;\">📋 Descripción del Problema</h3>\n                <p style=\"white-space: pre-wrap; line-height: 1.8; margin: 0; color: #78716c;\">\n{{ $json.body.description }}\n                </p>\n            </div>\n\n            <div style=\"text-align: center; margin: 35px 0;\">\n                <a href=\"http://localhost:8600\" class=\"action-button\">\n                    🚀 Ir al Panel de Soporte\n                </a>\n                <p style=\"font-size: 13px; color: #9ca3af; margin-top: 15px;\">\n                    Inicia sesión para ver todos los detalles y responder al cliente\n                </p>\n            </div>\n\n            <div style=\"background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-top: 30px;\">\n                <h4 style=\"margin: 0 0 10px 0; color: #1e40af;\">💡 Recordatorios Importantes</h4>\n                <ul style=\"margin: 10px 0; padding-left: 20px; color: #3730a3;\">\n                    <li>Solo puedes tener <strong>1 ticket activo</strong> a la vez</li>\n                    <li>Responde al cliente dentro de las <strong>próximas 24 horas</strong></li>\n                    <li>Mantén al cliente informado sobre el progreso</li>\n                    <li>Cierra el ticket cuando esté completamente resuelto</li>\n                </ul>\n            </div>\n\n            <div style=\"margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;\">\n                <p style=\"font-size: 14px; color: #6b7280; margin: 0;\">\n                    <strong>¿Necesitas ayuda?</strong><br>\n                    Contacta al administrador si tienes alguna duda sobre cómo proceder.\n                </p>\n            </div>\n        </div>\n\n        <div class=\"footer\">\n            <p style=\"margin: 0; color: #6b7280; font-size: 15px; font-weight: 600;\">\n                <strong>Tcleverflix</strong> - Sistema de Soporte Informático\n            </p>\n            <p style=\"margin: 8px 0 0 0; color: #9ca3af; font-size: 13px;\">\n                Siempre a su disposición\n            </p>\n            <p style=\"margin: 15px 0 0 0; color: #d1d5db; font-size: 12px;\">\n                © 2025 Tcleverflix. Este email fue generado automáticamente.\n            </p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-email-agent",
+      "name": "Send Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [
+        550,
+        300
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "1",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1",
+  "id": "workflow-asignar-agente",
+  "meta": {
+    "instanceId": "tcleverflix-tickkk"
+  },
+  "tags": []
+}
