@@ -1,0 +1,77 @@
+{
+  "name": "Notificación Cierre Ticket",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cerrar-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-cerrar",
+      "name": "Webhook Cerrar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "cerrar-ticket"
+    },
+    {
+      "parameters": {
+        "fromEmail": "=noreply@{{ $env.EMAIL_DOMAIN || 'tickkk.com' }}",
+        "toEmail": "={{ $json.body.clientEmail }}",
+        "subject": "=✅ Tu ticket #{{ $json.body.ticketId }} ha sido resuelto",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Ticket Resuelto</title>\n    <style>\n        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }\n        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }\n        .header { background: linear-gradient(135deg, #10b981, #059669); padding: 40px 30px; text-align: center; }\n        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }\n        .header p { color: #a7f3d0; margin: 10px 0 0 0; font-size: 16px; }\n        .content { padding: 40px 30px; }\n        .success-icon { text-align: center; font-size: 48px; margin: 20px 0; }\n        .ticket-info { background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #10b981; }\n        .ticket-id { font-size: 24px; font-weight: 600; color: #10b981; margin-bottom: 10px; }\n        .ticket-subject { font-size: 18px; font-weight: 500; color: #1f2937; margin-bottom: 15px; }\n        .status-badge { display: inline-block; padding: 6px 16px; background-color: rgba(16, 185, 129, 0.1); color: #10b981; border-radius: 20px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }\n        .satisfaction-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }\n        .rating-buttons { display: flex; justify-content: center; gap: 10px; margin: 15px 0; }\n        .rating-btn { padding: 10px 15px; border: 1px solid #10b981; background-color: #ffffff; color: #10b981; border-radius: 6px; text-decoration: none; font-weight: 500; }\n        .rating-btn:hover { background-color: #10b981; color: #ffffff; }\n        .footer { background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }\n        .footer p { margin: 0; color: #6b7280; font-size: 14px; }\n        .btn { display: inline-block; padding: 12px 24px; background-color: #10b981; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500; margin: 20px 0; }\n        .btn:hover { background-color: #059669; }\n        .timestamp { color: #6b7280; font-size: 12px; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>✅ Ticket Resuelto</h1>\n            <p>Tu solicitud ha sido completada</p>\n        </div>\n        \n        <div class=\"content\">\n            <div class=\"success-icon\">🎉</div>\n            \n            <h2>¡Excelentes noticias, {{ $json.body.clientName }}!</h2>\n            \n            <p>Nos complace informarte que tu ticket de soporte ha sido <strong>resuelto exitosamente</strong>.</p>\n            \n            <div class=\"ticket-info\">\n                <div class=\"ticket-id\">Ticket #{{ $json.body.ticketId }}</div>\n                <div class=\"ticket-subject\">{{ $json.body.subject }}</div>\n                <div class=\"timestamp\">Resuelto el {{ $now.format('DD/MM/YYYY HH:mm') }}</div>\n                <div style=\"margin-top: 15px;\">\n                    <span class=\"status-badge\">Cerrado</span>\n                </div>\n            </div>\n            \n            <p><strong>¿Qué sigue ahora?</strong></p>\n            <ul>\n                <li>Tu problema debería estar completamente solucionado</li>\n                <li>Puedes seguir usando nuestros servicios normalmente</li>\n                <li>Si necesitas ayuda adicional, no dudes en contactarnos</li>\n            </ul>\n            \n            <div class=\"satisfaction-box\">\n                <h3 style=\"color: #10b981; margin-top: 0;\">💚 ¿Cómo fue tu experiencia?</h3>\n                <p>Nos encantaría conocer tu opinión sobre nuestro servicio de soporte.</p>\n                <div class=\"rating-buttons\">\n                    <a href=\"#\" class=\"rating-btn\">😞 Malo</a>\n                    <a href=\"#\" class=\"rating-btn\">😐 Regular</a>\n                    <a href=\"#\" class=\"rating-btn\">🙂 Bueno</a>\n                    <a href=\"#\" class=\"rating-btn\">😊 Excelente</a>\n                </div>\n                <p style=\"font-size: 12px; color: #6b7280; margin-bottom: 0;\">Tu feedback nos ayuda a mejorar continuamente</p>\n            </div>\n            \n            <p><strong>¿Necesitas más ayuda?</strong></p>\n            <p>Si tienes alguna pregunta adicional o surge algún problema relacionado, puedes:</p>\n            <ul>\n                <li>Responder a este email para reabrir el ticket</li>\n                <li>Crear un nuevo ticket si es un problema diferente</li>\n                <li>Contactarnos directamente si es urgente</li>\n            </ul>\n            \n            <a href=\"{{ $env.FRONTEND_URL || 'http://localhost:3000' }}\" class=\"btn\">Crear Nuevo Ticket</a>\n        </div>\n        \n        <div class=\"footer\">\n            <p>Gracias por confiar en TickKK - Sistema de Tickets Premium</p>\n            <p>© 2024 TickKK. Todos los derechos reservados.</p>\n        </div>\n    </div>\n</body>\n</html>"
+      },
+      "id": "email-cierre",
+      "name": "Email Cierre",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Notificación de cierre enviada\", \"ticketId\": $json.body.ticketId } }}"
+      },
+      "id": "respuesta-cierre",
+      "name": "Respuesta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Cerrar": {
+      "main": [
+        [
+          {
+            "node": "Email Cierre",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Cierre": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1"
+}
