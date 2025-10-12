@@ -1,0 +1,113 @@
+{
+  "name": "Notificación Nuevo Ticket",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nuevo-ticket",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-nuevo-ticket",
+      "name": "Webhook Nuevo Ticket",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300],
+      "webhookId": "nuevo-ticket"
+    },
+    {
+      "parameters": {
+        "fromEmail": "=noreply@{{ $env.EMAIL_DOMAIN || 'tickkk.com' }}",
+        "toEmail": "={{ $json.body.clientEmail || $json.body.client_email }}",
+        "subject": "=Hemos recibido tu ticket de soporte [{{ $json.body.ticketId }}]",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Ticket Recibido</title>\n    <style>\n        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }\n        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }\n        .header { background: linear-gradient(135deg, #3b82f6, #1e40af); padding: 40px 30px; text-align: center; }\n        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }\n        .header p { color: #bfdbfe; margin: 10px 0 0 0; font-size: 16px; }\n        .content { padding: 40px 30px; }\n        .ticket-info { background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #3b82f6; }\n        .ticket-id { font-size: 24px; font-weight: 600; color: #3b82f6; margin-bottom: 10px; }\n        .ticket-subject { font-size: 18px; font-weight: 500; color: #1f2937; margin-bottom: 8px; }\n        .ticket-priority { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }\n        .priority-baja { background-color: rgba(107, 114, 128, 0.1); color: #6b7280; }\n        .priority-media { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }\n        .priority-alta { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }\n        .priority-critica { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }\n        .footer { background-color: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }\n        .footer p { margin: 0; color: #6b7280; font-size: 14px; }\n        .btn { display: inline-block; padding: 12px 24px; background-color: #3b82f6; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500; margin: 20px 0; }\n        .btn:hover { background-color: #1e40af; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>🎫 TickKK</h1>\n            <p>Sistema de Tickets Premium</p>\n        </div>\n        \n        <div class=\"content\">\n            <h2>¡Hola {{ $json.body.clientName }}!</h2>\n            \n            <p>Hemos recibido tu solicitud de soporte y queremos confirmarte que ya estamos trabajando en ella.</p>\n            \n            <div class=\"ticket-info\">\n                <div class=\"ticket-id\">Ticket #{{ $json.body.ticketId }}</div>\n                <div class=\"ticket-subject\">{{ $json.body.subject }}</div>\n                <span class=\"ticket-priority priority-{{ $json.body.priority }}\">{{ $json.body.priority }}</span>\n                <p><strong>Celular:</strong> {{ $json.body.clientPhone || $json.body.client_phone || 'N/A' }}</p>\n                <p><strong>Departamento:</strong> {{ $json.body.department || 'N/A' }}</p>\n            </div>\n            \n            <p><strong>¿Qué sucede ahora?</strong></p>\n            <ul>\n                <li>Nuestro equipo técnico revisará tu solicitud</li>\n                <li>Te contactaremos dentro de las próximas 24 horas</li>\n                <li>Recibirás actualizaciones por email cuando haya novedades</li>\n            </ul>\n            \n            <p>Si necesitas añadir información adicional o tienes preguntas urgentes, responde a este email mencionando el número de ticket.</p>\n        </div>\n        \n        <div class=\"footer\">\n            <p>Gracias por confiar en TickKK - Sistema de Tickets Premium</p>\n            <p>© 2024 TickKK. Todos los derechos reservados.</p>\n        </div>\n    </div>\n</body>\n</html>"
+      },
+      "id": "email-cliente",
+      "name": "Email al Cliente",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [460, 200],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "=noreply@{{ $env.EMAIL_DOMAIN || 'tickkk.com' }}",
+        "toEmail": "={{ $env.SUPPORT_TEAM_EMAIL || 'soporte@tickkk.com' }}",
+        "subject": "=🚨 Nuevo Ticket Creado: #{{ $json.body.ticketId }} por {{ $json.body.clientName }}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Nuevo Ticket</title>\n    <style>\n        body { font-family: 'Inter', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f9fafb; }\n        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }\n        .header { background: linear-gradient(135deg, #ef4444, #dc2626); padding: 40px 30px; text-align: center; }\n        .header h1 { color: #ffffff; margin: 0; font-size: 28px; font-weight: 600; }\n        .content { padding: 40px 30px; }\n        .ticket-card { background-color: #f3f4f6; border-radius: 8px; padding: 20px; margin: 20px 0; border-left: 4px solid #ef4444; }\n        .ticket-id { font-size: 24px; font-weight: 600; color: #ef4444; margin-bottom: 10px; }\n        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 15px 0; }\n        .info-item { display: flex; flex-direction: column; }\n        .info-label { font-size: 12px; font-weight: 500; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }\n        .info-value { font-size: 14px; font-weight: 500; color: #1f2937; margin-top: 2px; }\n        .description { background-color: #ffffff; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; margin: 15px 0; }\n        .btn { display: inline-block; padding: 12px 24px; background-color: #ef4444; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 500; margin: 20px 0; }\n        .priority-tag { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; text-transform: uppercase; }\n        .priority-baja { background-color: rgba(107, 114, 128, 0.1); color: #6b7280; }\n        .priority-media { background-color: rgba(59, 130, 246, 0.1); color: #3b82f6; }\n        .priority-alta { background-color: rgba(245, 158, 11, 0.1); color: #f59e0b; }\n        .priority-critica { background-color: rgba(239, 68, 68, 0.1); color: #ef4444; }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>🚨 Nuevo Ticket</h1>\n        </div>\n        \n        <div class=\"content\">\n            <h2>Se ha creado un nuevo ticket de soporte</h2>\n            \n            <div class=\"ticket-card\">\n                <div class=\"ticket-id\">Ticket #{{ $json.body.ticketId }}</div>\n                \n                <div class=\"info-grid\">\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Cliente</span>\n                        <span class=\"info-value\">{{ $json.body.clientName }}</span>\n                    </div>\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Email</span>\n                        <span class=\"info-value\">{{ $json.body.clientEmail || $json.body.client_email }}</span>\n                    </div>\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Prioridad</span>\n                        <span class=\"priority-tag priority-{{ $json.body.priority }}\">{{ $json.body.priority }}</span>\n                    </div>\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Fecha</span>\n                        <span class=\"info-value\">{{ $now.format('DD/MM/YYYY HH:mm') }}</span>\n                    </div>\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Celular</span>\n                        <span class=\"info-value\">{{ $json.body.clientPhone || $json.body.client_phone || 'N/A' }}</span>\n                    </div>\n                    <div class=\"info-item\">\n                        <span class=\"info-label\">Departamento</span>\n                        <span class=\"info-value\">{{ $json.body.department || 'N/A' }}</span>\n                    </div>\n                </div>\n                \n                <div class=\"info-item\">\n                    <span class=\"info-label\">Asunto</span>\n                    <span class=\"info-value\">{{ $json.body.subject }}</span>\n                </div>\n                \n                <div class=\"description\">\n                    <strong>Descripción:</strong><br>\n                    {{ $json.body.description }}\n                </div>\n            </div>\n            \n            <p><strong>Acciones requeridas:</strong></p>\n            <ul>\n                <li>Revisar el ticket en el panel de administración</li>\n                <li>Asignar a un técnico si es necesario</li>\n                <li>Contactar al cliente dentro de las próximas 24 horas</li>\n            </ul>\n            \n            <a href=\"{{ $env.FRONTEND_URL || 'http://localhost:3000' }}\" class=\"btn\">Ver en Panel</a>\n        </div>\n    </div>\n</body>\n</html>"
+      },
+      "id": "email-equipo",
+      "name": "Email al Equipo",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [460, 400],
+      "credentials": {
+        "smtp": {
+          "id": "smtp-credentials",
+          "name": "SMTP Credentials"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Notificaciones enviadas\", \"ticketId\": $json.body.ticketId } }}"
+      },
+      "id": "respuesta",
+      "name": "Respuesta",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Nuevo Ticket": {
+      "main": [
+        [
+          {
+            "node": "Email al Cliente",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email al Equipo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email al Cliente": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email al Equipo": {
+      "main": [
+        [
+          {
+            "node": "Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {},
+  "versionId": "1"
+}
